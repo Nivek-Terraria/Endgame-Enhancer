@@ -37,7 +37,7 @@ namespace EndgameEnhancer
             Name = "Endgame Enhancer";
             Description = "Enhances the Endgame of Terraria.";
             Author = "Nivek";
-            Version = "1";
+            Version = "1.01";
             TDSMBuild = 20; //Current Release - Working
 
             string pluginFolder = Statics.PluginPath + Path.DirectorySeparatorChar + "TDSM";
@@ -77,11 +77,10 @@ namespace EndgameEnhancer
             this.registerHook(Hooks.PLAYER_PROJECTILE);
             this.registerHook(Hooks.NPC_DEATH);
             this.registerHook(Hooks.PLAYER_HURT);
-
-
-            Main.stopSpawns = isEnabled;
-            if (isEnabled)
+                        
+            if (!mobSpawn)
             {
+                Main.stopSpawns = isEnabled;
                 Program.tConsole.WriteLine("Disabled NPC Spawning");
             }
         }
