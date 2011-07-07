@@ -1,1 +1,10 @@
-A README
+
+Player Commands:
+/xp combat - Displays your combat XP total.
+/xp defense - Displays your defense XP total.
+/xp traveler - Displays your traveler XP total.
+/xp all - Displays all of the XP totals.
+
+Player Keys:
+Up - Displays all of the XP totals.
+ 
