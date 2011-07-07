@@ -19,5 +19,6 @@ namespace EndgameEnhancer
         {
             return getValue(name, 0);
         }
+
     }
 }

@@ -8,6 +8,7 @@ using EndgameEnhancer;
 using Terraria_Server.Plugin;
 using Terraria_Server;
 using Terraria_Server.Events;
+using Terraria_Server.Misc;
 using System.IO;
 
 namespace EndgameEnhancer
@@ -32,6 +33,8 @@ namespace EndgameEnhancer
         public bool isEnabled = false;
         File combatXP;
         File defenseXP;
+        File travelerXP;
+        Vector2[] lastPos = new Vector2[255];
 
         public override void Load()
         {
@@ -58,6 +61,10 @@ namespace EndgameEnhancer
             defenseXP.Load();
             //defenseXP.Save();
 
+            travelerXP = new File(pluginFolder + Path.DirectorySeparatorChar + "travelerXP.file");
+            travelerXP.Load();
+            //travelerXP.Save();
+
 
 
 
@@ -80,6 +87,8 @@ namespace EndgameEnhancer
             this.registerHook(Hooks.PLAYER_HURT);
             this.registerHook(Hooks.PLAYER_MOVE);
             this.registerHook(Hooks.PLAYER_KEYPRESS);
+            this.registerHook(Hooks.PLAYER_LOGIN);
+
             /*             
              if (!mobSpawn)
              {
@@ -103,35 +112,54 @@ namespace EndgameEnhancer
             {
                 if (commands[0] != null && commands[0].Trim().Length > 0) //If it is nothing, and the string is actually something
                 {
-                    if (commands[0].Equals("/tdsmpluginexample"))
-                    {
-                        Program.tConsole.WriteLine("[TSDM Plugin] Player used Plugin Command: " + player.Name);
-
-                        player.sendMessage("TDSM Plugin Example, For Build: #" + this.TDSMBuild, 255, 255f, 255f, 255f);
-
-                        Event.Cancelled = true;
-                    }
 
                     if (commands[0].Equals("/xp"))
                     {
+
                         if (commands[1].ToLower().StartsWith("c"))
                         {
-                            int xp = combatXP.getPlayerValue(player.Name);
+                            int cXP = combatXP.getPlayerValue(player.Name);
 
-                            Program.tConsole.WriteLine("[Plugin] " + player.Name + " used /xp combat");
-                            player.sendMessage("You have " + xp + " Combat XP.");
+                            Program.tConsole.WriteLine("[Endgame Enhancer] " + player.Name + " used /xp combat");
+                            player.sendMessage("You have " + cXP + " Combat XP.");
 
                         }
                         if (commands[1].ToLower().StartsWith("d"))
                         {
-                            int xp = defenseXP.getPlayerValue(player.Name);
+                            int dXP = defenseXP.getPlayerValue(player.Name);
 
-                            Program.tConsole.WriteLine("[Plugin] " + player.Name + " used /xp defense");
-                            player.sendMessage("You have " + xp + " Defense XP.");
+                            Program.tConsole.WriteLine("[Endgame Enhancer] " + player.Name + " used /xp defense");
+                            player.sendMessage("You have " + dXP + " Defense XP.");
 
 
                         }
+                        if (commands[1].ToLower().StartsWith("t"))
+                        {
+                            int tXP = travelerXP.getPlayerValue(player.Name);
+
+                            Program.tConsole.WriteLine("[Endgame Enhancer] " + player.Name + " used /xp traveler");
+                            player.sendMessage("You have " + tXP + " Traveler XP.");
+
+
+                        }
+
+
+                        if (commands[1].ToLower().StartsWith("a"))
+                        {
+                            int cXP = combatXP.getPlayerValue(player.Name);
+                            int dXP = defenseXP.getPlayerValue(player.Name);
+                            int tXP = travelerXP.getPlayerValue(player.Name);
+
+                            Program.tConsole.WriteLine("[Endgame Enhancer] " + player.Name + " used /xp");
+                            player.sendMessage(cXP + " Combat XP, " + dXP + " Defense XP, " + tXP + " Traveler XP");
+
+
+                        }
+
                     }
+
+
+
                 }
             }
         }
@@ -171,7 +199,7 @@ namespace EndgameEnhancer
 
         public override void onPlayerHurt(PlayerHurtEvent Event)
         {
-            base.onPlayerHurt(Event);
+            //base.onPlayerHurt(Event);
 
             Player player = Event.Player;
 
@@ -190,7 +218,7 @@ namespace EndgameEnhancer
 
         public override void onNPCDeath(NPCDeathEvent Event)
         {
-            base.onNPCDeath(Event);
+            //base.onNPCDeath(Event);
 
             Player player = Main.players[Event.Npc.target];
 
@@ -206,16 +234,49 @@ namespace EndgameEnhancer
             Event.Cancelled = true;
         }
 
-        public override void onPlayerKeyPress(PlayerKeyPressEvent Event)
+
+
+        public override void onPlayerJoin(PlayerLoginEvent Event)
         {
-            base.onPlayerKeyPress(Event);
+            //base.onPlayerKeyPress(Event);
+
             Player player = Event.Player;
 
-            if (Event.KeysPressed.Left) player.sendMessage("--Left");
-            if (Event.KeysPressed.Right) player.sendMessage("--Right");
-            if (Event.KeysPressed.Up) player.sendMessage("--Up");
-            if (Event.KeysPressed.Down) player.sendMessage("--Down");
-            if (Event.KeysPressed.Jump) player.sendMessage("--Jump");
+            lastPos[player.whoAmi] = player.getLocation();
+
+        }
+
+        public override void onPlayerKeyPress(PlayerKeyPressEvent Event)
+        {
+            //base.onPlayerKeyPress(Event);
+            Player player = Event.Player;
+
+            //if (Event.KeysPressed.Left) player.sendMessage("--Left");
+            //if (Event.KeysPressed.Right) player.sendMessage("--Right");
+            //if (Event.KeysPressed.Up) player.sendMessage("--Up");
+            //if (Event.KeysPressed.Down) player.sendMessage("--Down");
+            //if (Event.KeysPressed.Jump) player.sendMessage("--Jump");
+
+            if (Event.KeysPressed.Left || Event.KeysPressed.Right)
+            {
+                int xp = Math.Abs((int)(lastPos[player.whoAmi].X - player.getLocation().X));
+                xp += travelerXP.getPlayerValue(player.Name);
+
+                travelerXP.setPlayerValue(player.Name, xp);
+                travelerXP.Save();
+
+                lastPos[player.whoAmi] = player.getLocation();
+
+            }
+
+            if (Event.KeysPressed.Up)
+            {
+                int cXP = combatXP.getPlayerValue(player.Name);
+                int dXP = defenseXP.getPlayerValue(player.Name);
+                int tXP = travelerXP.getPlayerValue(player.Name);
+                player.sendMessage(cXP + " Combat XP, " + dXP + " Defense XP, " + tXP + " Traveler XP");
+
+            }
 
 
         }
@@ -223,10 +284,10 @@ namespace EndgameEnhancer
 
         public override void onPlayerMove(PlayerMoveEvent Event)
         {
-            base.onPlayerMove(Event);
-            Player player = Event.Player;
+            //base.onPlayerMove(Event);
+            //Player player = Event.Player;
 
-            player.sendMessage("You have moved.");
+            //player.sendMessage("You have moved.");
         }
 
 
