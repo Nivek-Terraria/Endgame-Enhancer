@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+
 using EndgameEnhancer;
 using Terraria_Server.Plugin;
 using Terraria_Server;
@@ -38,7 +39,7 @@ namespace EndgameEnhancer
             Description = "Enhances the Endgame of Terraria.";
             Author = "Nivek";
             Version = "1.01";
-            TDSMBuild = 20; //Current Release - Working
+            TDSMBuild = 21; //Current Release - Working
 
             string pluginFolder = Statics.PluginPath + Path.DirectorySeparatorChar + "TDSM";
             //Create folder if it doesn't exist
@@ -77,12 +78,14 @@ namespace EndgameEnhancer
             this.registerHook(Hooks.PLAYER_PROJECTILE);
             this.registerHook(Hooks.NPC_DEATH);
             this.registerHook(Hooks.PLAYER_HURT);
-                        
-            if (!mobSpawn)
-            {
-                Main.stopSpawns = isEnabled;
-                Program.tConsole.WriteLine("Disabled NPC Spawning");
-            }
+            this.registerHook(Hooks.PLAYER_MOVE);
+            this.registerHook(Hooks.PLAYER_KEYPRESS);
+            /*             
+             if (!mobSpawn)
+             {
+                 Main.stopSpawns = isEnabled;
+                 Program.tConsole.WriteLine("Disabled NPC Spawning");
+             }*/
         }
 
         public override void Disable()
@@ -202,6 +205,30 @@ namespace EndgameEnhancer
             //Program.tConsole.WriteLine("NPCDeath: " + Event.Npc.Name);
             Event.Cancelled = true;
         }
+
+        public override void onPlayerKeyPress(PlayerKeyPressEvent Event)
+        {
+            base.onPlayerKeyPress(Event);
+            Player player = Event.Player;
+
+            if (Event.KeysPressed.Left) player.sendMessage("--Left");
+            if (Event.KeysPressed.Right) player.sendMessage("--Right");
+            if (Event.KeysPressed.Up) player.sendMessage("--Up");
+            if (Event.KeysPressed.Down) player.sendMessage("--Down");
+            if (Event.KeysPressed.Jump) player.sendMessage("--Jump");
+
+
+        }
+
+
+        public override void onPlayerMove(PlayerMoveEvent Event)
+        {
+            base.onPlayerMove(Event);
+            Player player = Event.Player;
+
+            player.sendMessage("You have moved.");
+        }
+
 
         private static void CreateDirectory(string dirPath)
         {
