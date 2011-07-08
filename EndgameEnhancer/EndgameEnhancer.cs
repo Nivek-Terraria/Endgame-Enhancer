@@ -42,7 +42,7 @@ namespace EndgameEnhancer
             Description = "Enhances the Endgame of Terraria.";
             Author = "Nivek";
             Version = "1.01";
-            TDSMBuild = 21; //Current Release - Working
+            TDSMBuild = 24; //Current Release - Working
 
             string pluginFolder = Statics.PluginPath + Path.DirectorySeparatorChar + "TDSM";
             //Create folder if it doesn't exist
@@ -80,7 +80,7 @@ namespace EndgameEnhancer
         {
             Program.tConsole.WriteLine(base.Name + " enabled.");
             //Register Hooks
-            this.registerHook(Hooks.TILE_CHANGE);
+            this.registerHook(Hooks.PLAYER_TILECHANGE);
             this.registerHook(Hooks.PLAYER_COMMAND);
             this.registerHook(Hooks.PLAYER_PROJECTILE);
             this.registerHook(Hooks.NPC_DEATH);
@@ -88,6 +88,9 @@ namespace EndgameEnhancer
             this.registerHook(Hooks.PLAYER_MOVE);
             this.registerHook(Hooks.PLAYER_KEYPRESS);
             this.registerHook(Hooks.PLAYER_LOGIN);
+            this.registerHook(Hooks.PLAYER_EDITSIGN);
+
+            
 
             /*             
              if (!mobSpawn)
@@ -164,8 +167,10 @@ namespace EndgameEnhancer
             }
         }
 
-        public override void onTileChange(PlayerTileChangeEvent Event)
+        
+        public override void onPlayerTileChange(PlayerTileChangeEvent Event)
         {
+
             if (isEnabled == false || tileBreak == false)
             {
                 Event.Cancelled = true;
@@ -176,6 +181,9 @@ namespace EndgameEnhancer
 
         public override void onPlayerProjectileUse(PlayerProjectileEvent Event)
         {
+
+            Program.tConsole.WriteLine("Projectile Thrown");
+
             if (isEnabled == false) { return; }
             if (!explosives)
             {
@@ -219,6 +227,11 @@ namespace EndgameEnhancer
         public override void onNPCDeath(NPCDeathEvent Event)
         {
             //base.onNPCDeath(Event);
+
+            //Player test = (Player)Event.Sender;
+
+            //test.sendMessage(Event.Npc.Name);
+
 
             Player player = Main.players[Event.Npc.target];
 
@@ -271,10 +284,40 @@ namespace EndgameEnhancer
 
             if (Event.KeysPressed.Up)
             {
-                int cXP = combatXP.getPlayerValue(player.Name);
-                int dXP = defenseXP.getPlayerValue(player.Name);
-                int tXP = travelerXP.getPlayerValue(player.Name);
-                player.sendMessage(cXP + " Combat XP, " + dXP + " Defense XP, " + tXP + " Traveler XP");
+                int x = ((int)player.getLocation().X) /16;
+                int y = ((int)player.getLocation().Y + 32) /16;
+
+
+                
+
+
+
+                if (Main.tile[x, y].type == 55) //55-sign
+                {
+                    player.sendMessage("In front of a sign!");
+
+                    int i = Sign.ReadSign(x, y);
+                    int cXP = combatXP.getPlayerValue(player.Name);
+                    int dXP = defenseXP.getPlayerValue(player.Name);
+                    int tXP = travelerXP.getPlayerValue(player.Name);
+                    Sign.TextSign(i, player.Name+"\nCombat XP: " + cXP+"\nDefense XP: "+dXP+"\nTraveler XP: "+tXP+"\n\nLevel: 1\nMagic: 10\nOther: 100");
+                    
+                    
+
+                }
+
+                else
+                {
+                    int cXP = combatXP.getPlayerValue(player.Name);
+                    int dXP = defenseXP.getPlayerValue(player.Name);
+                    int tXP = travelerXP.getPlayerValue(player.Name);
+                    player.sendMessage(cXP + " Combat XP, " + dXP + " Defense XP, " + tXP + " Traveler XP");
+
+
+
+                }
+
+                
 
             }
 
@@ -289,6 +332,22 @@ namespace EndgameEnhancer
 
             //player.sendMessage("You have moved.");
         }
+
+
+
+        public override void onPlayerEditSign(PlayerEditSignEvent Event)
+        {
+            //base.onPlayerEditSign(Event);
+
+            Player player = Event.Player;
+
+            player.sendMessage("Sign! "+Event.Text);
+            //Event.Sign.text = "This is a test";
+            Program.tConsole.WriteLine("Sign has been edited");
+
+            //Event.Cancelled = true;
+        }
+
 
 
         private static void CreateDirectory(string dirPath)
