@@ -1,1 +1,16 @@
-A README
+Endgame Enhancer
+-Nivek
+http://www.tdsm.org/index.php?topic=191.0
+
+
+A plugin that intends to add to the Endgame of Terraria.
+
+Player Commands:
+/xp combat - Displays your combat XP total.
+/xp defense - Displays your defense XP total.
+/xp traveler - Displays your traveler XP total.
+/xp all - Displays all of the XP totals.
+
+Player Keys:
+Up - Displays all of the XP totals.
+ 
